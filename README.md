@@ -1,4 +1,4 @@
 triple
 ======
 
-It's a search project writting by c
+It's a search project writting by c++
