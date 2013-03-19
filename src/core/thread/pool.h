@@ -5,10 +5,9 @@
 #include <thread/cond.h>
 #include <thread/job.h>
 #include <thread/workthread.h>
-#include <vector>
+#include <queue>
 #include <algorithm>
 using namespace std;
-#define THREAD_NUM 4
 namespace triple
 {
     class Workthread;
@@ -16,15 +15,15 @@ namespace triple
     {
         private:
             int size;
-            vector<Workthread *> *thread_list;
-            vector<Workthread *> *busy_list;
-            vector<Workthread *> *idle_list;
+            queue<Workthread *> *thread_list;
+            queue<Workthread *> *busy_list;
+            queue<Workthread *> *idle_list;
             Mutex *busy_mutex;
             Mutex *idle_mutex;
             Cond *busy_cond;
             Cond *idle_cond;
         public:
-            Pool();
+            Pool() {};
             Pool(int size);
             ~Pool();
             void run(Job *job, void *job_data);
@@ -32,7 +31,7 @@ namespace triple
             void move_to_busy_list(Workthread *wt);
             Workthread *get_idle_thread();
             void terminate();
-            vector<Workthread *> *get_idle_list();
+            queue<Workthread *> *get_idle_list();
     };
 }
 #endif

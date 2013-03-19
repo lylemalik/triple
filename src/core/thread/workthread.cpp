@@ -9,62 +9,48 @@
 using namespace std;
 using namespace triple;
 
-Workthread::Workthread()
-{
-    this->pool = NULL;
-    job = NULL;
-    job_data = NULL;
-    mutex = new Mutex();
-    cond = new Cond();
-}
-
 Workthread::Workthread(Pool *pool)
 {
     this->pool = pool;
     job = NULL;
     job_data = NULL;
-    mutex = new Mutex();
-    cond = new Cond();
+    job_mutex = new Mutex();
+    job_cond = new Cond();
 }
 
 Workthread::~Workthread()
 {
-    delete(mutex);
-    delete(cond);
-}
-
-void Workthread::set_pool(Pool *pool)
-{
-    this->pool = pool;
+    delete(job_mutex);
+    delete(job_cond);
 }
 
 void Workthread::exit()
 {
-    cond->singal();
+    job_cond->singal();
 }
 
 void Workthread::run()
 {
     while (1)
     {
-        mutex->lock();
+        job_mutex->lock();
         if (job == NULL)
-            cond->wait(mutex);
+            job_cond->wait(job_mutex);
         if (job)
             job->run(job_data);
         else
             pthread_exit(NULL);
         job = NULL;
-        mutex->unlock();
+        job_mutex->unlock();
         pool->move_to_idle_list(this);
     }
 }
 
 void Workthread::set_job(Job *job, void *job_data)
 {
-    mutex->lock();
+    job_mutex->lock();
     this->job = job;
     this->job_data = job_data;
-    mutex->unlock();
-    cond->singal();
+    job_mutex->unlock();
+    job_cond->singal();
 }

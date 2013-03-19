@@ -4,36 +4,16 @@
 #include <thread/job.h>
 #include <thread/workthread.h>
 #include <iostream>
-#include <vector>
+#include <queue>
 using namespace std;
 using namespace triple;
-
-Pool::Pool()
-{
-    size = THREAD_NUM;
-    thread_list = new vector<Workthread *>;
-    busy_list = new vector<Workthread *>;
-    idle_list = new vector<Workthread *>;
-    busy_mutex = new Mutex();
-    idle_mutex = new Mutex();
-    busy_cond = new Cond();
-    idle_cond = new Cond();
-
-    for (int i = 0; i < size; ++i)
-    {
-        Workthread *wt = new Workthread(this);
-        thread_list->push_back(wt);
-        idle_list->push_back(wt);
-        wt->start();
-    }
-}
 
 Pool::Pool(int size)
 {
     this->size = size;
-    thread_list = new vector<Workthread *>;
-    busy_list = new vector<Workthread *>;
-    idle_list = new vector<Workthread *>;
+    thread_list = new queue<Workthread *>;
+    busy_list = new queue<Workthread *>;
+    idle_list = new queue<Workthread *>;
     busy_mutex = new Mutex();
     idle_mutex = new Mutex();
     busy_cond = new Cond();
@@ -42,14 +22,15 @@ Pool::Pool(int size)
     for (int i = 0; i < size ; ++i)
     {
         Workthread *wt = new Workthread(this);
-        thread_list->push_back(wt);
-        idle_list->push_back(wt);
+        thread_list->push(wt);
+        idle_list->push(wt);
         wt->start();
     }
 }
 
 Pool::~Pool()
 {
+    terminate();
     delete(thread_list);
     delete(busy_list);
     delete(idle_list);
@@ -61,9 +42,10 @@ Pool::~Pool()
 
 void Pool::terminate()
 {
-    for (int i = 0; i < size ; ++i)
+    while (thread_list->size())
     {
-        Workthread *wt = (*thread_list)[i];
+        Workthread *wt = thread_list->front();
+        thread_list->pop();
         wt->exit();
         wt->join();
         delete(wt);
@@ -73,30 +55,15 @@ void Pool::terminate()
 void Pool::move_to_busy_list(Workthread *wt)
 {
     busy_mutex->lock();
-    busy_list->push_back(wt);
+    busy_list->push(wt);
     busy_mutex->unlock();
-
-    idle_mutex->lock();
-    vector<Workthread *>::iterator iter;
-    iter = find(idle_list->begin(), idle_list->end(), wt);
-    if (iter != idle_list->end())
-        idle_list->erase(iter);
-    idle_mutex->unlock();
 }
 
 void Pool::move_to_idle_list(Workthread *wt)
 {
     idle_mutex->lock();
-    idle_list->push_back(wt);
+    idle_list->push(wt);
     idle_mutex->unlock();
-
-    busy_mutex->lock();
-    vector<Workthread *>::iterator iter;
-    iter = find(busy_list->begin(), busy_list->end(), wt);
-    if (iter != busy_list->end())
-        busy_list->erase(iter);
-    busy_mutex->unlock();
-    idle_cond->singal();
 }
 
 Workthread *Pool::get_idle_thread()
@@ -107,6 +74,7 @@ Workthread *Pool::get_idle_thread()
     if (idle_list->size() > 0)
     {
         Workthread *wt = idle_list->front();
+        idle_list->pop();
         idle_mutex->unlock();
         return wt;
     }

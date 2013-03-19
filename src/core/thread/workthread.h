@@ -16,10 +16,10 @@ namespace triple
             Pool *pool;
             Job *job;
             void *job_data;
-            Mutex *mutex;
-            Cond *cond;
+            Mutex *job_mutex;
+            Cond *job_cond;
         public:
-            Workthread();
+            Workthread() {};
             Workthread(Pool *pool);
             ~Workthread();
             void run();

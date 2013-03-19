@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <pcre.h>
+#include <queue>
 using namespace std;
 
 #define OVCOUNT 30
@@ -19,7 +20,7 @@ namespace triple
             }
             Regex(string pattern);
             string match_one(string src, int sub_num);
-            vector<string> *match(string src, int sub_num);
+            deque<string> *match(string src, int sub_num);
             ~Regex()
             {
                 pcre_free(re);

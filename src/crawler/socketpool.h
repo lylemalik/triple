@@ -3,8 +3,7 @@
 
 #include <net.h>
 #include <string>
-#include <queue>
-#include <vector>
+#include <deque>
 #include <thread/mutex.h>
 #include <thread/cond.h>
 using namespace std;
@@ -14,18 +13,20 @@ namespace triple
     class Socketpool
     {
         private:
-            vector<Net *> *net_vec;
-            queue<Net *> *busy_que;
-            queue<Net *> *idle_que;
+            deque<Net *> *net_que;
+            deque<Net *> *busy_que;
+            deque<Net *> *idle_que;
             Mutex *busy_mutex;
             Mutex *idle_mutex;
             Cond *busy_cond;
             Cond *idle_cond;
         public:
-            Socketpool();
-            Socketpool(int socketnum, string host, int port);
+            Socketpool() {};
+            Socketpool(int socketnum, string host);
             ~Socketpool();
             Net *get_idle_socket();
+            void move_to_idle_que(Net *net);
+            void move_to_busy_que(Net *net);
     };
 }
 #endif

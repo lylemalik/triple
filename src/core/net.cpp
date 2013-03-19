@@ -14,10 +14,9 @@
 using namespace std;
 using namespace triple;
 
-Net::Net(string host, int port)
+Net::Net(string host)
 {
     this->host = host;
-    this->port = port;
     this->sockfd = socket(AF_INET, SOCK_STREAM, 0);
     this->set_non_block();
     Dns *dns = Dns::get_instance();
@@ -25,16 +24,15 @@ Net::Net(string host, int port)
     this->set_non_block();
 }
 
-void Net::set_value(string host, int port)
-{
-    this->host = host;
-    this->port = port;
-    this->sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    this->set_non_block();
-    Dns *dns = Dns::get_instance();
-    this->ip = dns->get_ip_by_host(host);
-    this->set_non_block();
-}
+//void Net::set_value(string host)
+//{
+    //this->host = host;
+    //this->sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    //this->set_non_block();
+    //Dns *dns = Dns::get_instance();
+    //this->ip = dns->get_ip_by_host(host);
+    //this->set_non_block();
+//}
 
 void Net::set_non_block()
 {
@@ -47,7 +45,7 @@ int Net::link()
     memset(&addr, 0, sizeof(addr));
     addr.sin_family = AF_INET;
     addr.sin_addr.s_addr = inet_addr(ip.c_str());
-    addr.sin_port = htons(port);
+    addr.sin_port = htons(PORT);
     if (connect(sockfd, (struct sockaddr *)&addr, sizeof(struct sockaddr)) == 0)
         return 1;
     if (errno == EINPROGRESS)
@@ -86,6 +84,7 @@ string Net::receive(int len)
         {
             memset(read_buf, 0, MAXLEN);
             temp = read(sockfd, read_buf, MAXLEN);
+            cout << "read, sockfd = " << sockfd << ", len = " << temp << endl;
             if (temp == -1 && errno == EAGAIN)
                 continue;
             else if (temp > 0)
@@ -109,5 +108,11 @@ int Net::post(string content)
         if (writed_len < 0)
             return -1;
     }
+    cout << "write, sockfd = " << sockfd << ", len = " << writed_len << endl;
     return writed_len;
+}
+
+int Net::get_sockfd()
+{
+    return sockfd;
 }

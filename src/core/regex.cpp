@@ -1,7 +1,7 @@
 #include <regex.h>
 #include <string>
-#include <vector>
 #include <pcre.h>
+#include <deque>
 using namespace std;
 using namespace triple;
 
@@ -22,9 +22,9 @@ string Regex::match_one(string src, int sub_num)
     return match;
 }
 
-vector<string> *Regex::match(string src, int sub_num)
+deque<string> *Regex::match(string src, int sub_num)
 {
-    vector<string> *matchvec = new vector<string>;
+    deque<string> *matchque = new deque<string>;
     int ovec[OVCOUNT];
     int p = 0;
     int src_len = src.length();
@@ -32,10 +32,10 @@ vector<string> *Regex::match(string src, int sub_num)
     {
         int rc = pcre_exec(re, NULL, src.c_str() + p, src_len, 0, 0, ovec, OVCOUNT);
         if (rc < 0)
-            return matchvec;
+            return matchque;
         string s(src, p + ovec[2 * sub_num], ovec[2 * sub_num + 1] - ovec[2 * sub_num]);
-        matchvec->push_back(s);
+        matchque->push_back(s);
         p += ovec[1];
     }
-    return matchvec;
+    return matchque;
 }

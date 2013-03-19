@@ -1,46 +1,59 @@
+#include <iostream>
 #include <site.h>
 #include <string>
 #include <set>
 #include <net.h>
+#include <algorithm>
 using namespace std;
 using namespace triple;
 
-Site::Site()
+Site::Site(string host)
 {
-    being_fetch = new vector<string>;
+    this->host = host;
+    being_fetch = new deque<string>;
     fetched = new set<string>;
     being_fetch_mutex = new Mutex();
+    being_fetch_cond = new Cond();
     fetched_mutex = new Mutex();
 }
 
-Site::Site(string domain, int port)
-{
-    this->domain = domain;
-    this->port = port;
-    being_fetch = new vector<string>;
-    fetched = new set<string>;
-    being_fetch_mutex = new Mutex();
-    fetched_mutex = new Mutex();
-}
-
-~Site::Site()
+Site::~Site()
 {
     delete(being_fetch);
     delete(fetched);
     delete(being_fetch_mutex);
+    delete(being_fetch_cond);
     delete(fetched_mutex);
 }
 
-string Site::get_domain()
+string Site::get_host()
 {
-    return domain;
+    return host;
+}
+
+deque<string> *Site::get_being_fetch()
+{
+    return being_fetch;
+}
+
+set<string> *Site::get_fetched()
+{
+    return fetched;
 }
 
 int Site::is_url_exist(string url)
 {
     set<string>::iterator iter;
+    fetched_mutex->lock();
     iter = fetched->find(url);
-    if (iter != fetched->end())
+    fetched_mutex->unlock();
+
+    deque<string>::iterator diter;
+    being_fetch_mutex->lock();
+    diter = find(being_fetch->begin(), being_fetch->end(), url);
+    being_fetch_mutex->unlock();
+
+    if (iter != fetched->end() || diter != being_fetch->end())
         return 1;
     return 0;
 }
@@ -49,8 +62,15 @@ string Site::pop_url()
 {
     string url;
     being_fetch_mutex->lock();
-    if (being_fetch->size() > 0)
-        url = being_fetch->pop();
+    if (being_fetch->size() <= 0)
+        being_fetch_cond->wait(being_fetch_mutex);
+    if (being_fetch->size() <= 0)
+    {
+        being_fetch_mutex->unlock();
+        return NULL;
+    }
+    url = being_fetch->front();
+    being_fetch->pop_front();
     being_fetch_mutex->unlock();
     return url;
 }
@@ -58,8 +78,9 @@ string Site::pop_url()
 void Site::push_being_fetch(string url)
 {
     being_fetch_mutex->lock();
-    being_fetch->push(url);
+    being_fetch->push_back(url);
     being_fetch_mutex->unlock();
+    being_fetch_cond->singal();
 }
 
 void Site::push_fetched(string url)
