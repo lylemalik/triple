@@ -5,7 +5,7 @@
 #include <crawler.h>
 #include <socketpool.h>
 using namespace std;
-#define SOCKETNUM 3
+#define SOCKETNUM 1
 #define PORT 80
 namespace triple
 {

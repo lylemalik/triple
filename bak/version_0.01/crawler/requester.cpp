@@ -5,6 +5,7 @@
 #include <crawler.h>
 #include <socketpool.h>
 #include <sys/epoll.h>
+#include <sys/socket.h>
 using namespace std;
 using namespace triple;
 
@@ -34,12 +35,14 @@ void Requester::run()
                 break;
             site->push_fetched(url);
             Net *net = socketpool->get_idle_socket();
-            int post_ok = http_requester(net, url);
-            if (post_ok == -1)
-            {
-                net->link();
-                http_requester(net, url);
-            }
+            net->link();
+            http_requester(net, url);
+            cout << "send request " + url << endl;
+            //if (post_ok == -1)
+            //{
+                //net->link();
+                //http_requester(net, url);
+            //}
             struct epoll_event ev;
             ev.events = EPOLLIN;
             Epoll_ptr *ptr = new Epoll_ptr();
@@ -48,6 +51,7 @@ void Requester::run()
             ptr->socketpool = socketpool;
             ev.data.ptr = ptr;
             epoll_ctl(crawler->get_epollfd(), EPOLL_CTL_ADD, net->get_sockfd(), &ev);
+            cout << "sockfd = " << net->get_sockfd() << endl;
         }
         iter++;
     }

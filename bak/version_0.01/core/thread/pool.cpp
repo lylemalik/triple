@@ -64,6 +64,7 @@ void Pool::move_to_idle_list(Workthread *wt)
     idle_mutex->lock();
     idle_list->push(wt);
     idle_mutex->unlock();
+    idle_cond->singal();
 }
 
 Workthread *Pool::get_idle_thread()

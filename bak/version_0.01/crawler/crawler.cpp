@@ -29,14 +29,14 @@ void Crawler::start()
     while (1)
     {
         int ready = epoll_wait(epollfd, events, MAXEVENT, 10);
+        cout << "ready = " << ready << endl;
         if (ready <= 0)
             continue;
-        cout << "ready = " << ready << endl;
         for (int i = 0; i < ready; i++)
         {
             Responsejob *rjob = new Responsejob(this);
-            pool->run(rjob, events[i].data.ptr);
             epoll_ctl(epollfd, EPOLL_CTL_DEL, ((Epoll_ptr *)events[i].data.ptr)->net->get_sockfd(), NULL);
+            pool->run(rjob, events[i].data.ptr);
         }
     }
 }

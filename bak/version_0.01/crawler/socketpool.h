@@ -27,6 +27,10 @@ namespace triple
             Net *get_idle_socket();
             void move_to_idle_que(Net *net);
             void move_to_busy_que(Net *net);
+            deque<Net *> *get_net_que()
+            {
+                return net_que;
+            }
     };
 }
 #endif

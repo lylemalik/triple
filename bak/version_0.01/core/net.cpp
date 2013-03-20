@@ -84,7 +84,6 @@ string Net::receive(int len)
         {
             memset(read_buf, 0, MAXLEN);
             temp = read(sockfd, read_buf, MAXLEN);
-            cout << "read, sockfd = " << sockfd << ", len = " << temp << endl;
             if (temp == -1 && errno == EAGAIN)
                 continue;
             else if (temp > 0)
@@ -108,7 +107,6 @@ int Net::post(string content)
         if (writed_len < 0)
             return -1;
     }
-    cout << "write, sockfd = " << sockfd << ", len = " << writed_len << endl;
     return writed_len;
 }
 

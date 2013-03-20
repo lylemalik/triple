@@ -16,12 +16,17 @@ namespace triple
         public:
             Net() {};
             Net(string host);
+            ~Net() {close(sockfd);}
             //void set_value(string host, int port);
             string receive(int len);
             int post(string content);
             int link();
             int get_sockfd();
             void set_non_block();
+            string get_host()
+            {
+                return host;
+            }
     };
 }
 

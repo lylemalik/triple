@@ -1,3 +1,4 @@
+#include <iostream>
 #include <socketpool.h>
 #include <deque>
 #include <vector>
