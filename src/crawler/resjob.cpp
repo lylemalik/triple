@@ -49,12 +49,13 @@ static deque<string> *get_link(string content, string host)
 {
     string pattern = "<a.*?href\\s?=\\s?\"(.*?)\".*?>";
     Regex *regex = new Regex(pattern);
-    deque<string> *links = regex->match(content, 1);
+    deque<Regex_node *> *links = regex->match(content, 1);
     deque<string> *filt_links = new deque<string>;
     while (links->size())
     {
-        string url = links->front();
+        Regex_node *rn = links->front();
         links->pop_front();
+        string url = rn->content;
         if (url.length() == 0) //空URL，丢弃 
             continue;
 

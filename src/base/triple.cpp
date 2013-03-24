@@ -5,14 +5,17 @@
 #include <net.h>
 #include <dns.h>
 #include <crawler.h>
+#include <index.h>
+#include <segment.h>
 
 using namespace std;
 using namespace triple;
 
 Dns *Dns::dns = NULL;
+Segment *Segment::seg = NULL;
 int main(int argc, const char *argv[])
 {
-    Crawler *crawler = new Crawler();
-    crawler->start();
+    Index *index = new Index();
+    index->start();
     return 0;
 }

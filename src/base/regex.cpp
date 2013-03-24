@@ -18,14 +18,14 @@ string Regex::match_one(string src, int sub_num)
     int ovec[OVCOUNT];
     int rc = pcre_exec(re, NULL, src.c_str(), src.length(), 0, 0, ovec, OVCOUNT);
     if (rc < 0)
-        return NULL;
+        return "";
     string match(src, ovec[2 * sub_num], ovec[2 * sub_num + 1] - ovec[2 * sub_num]);
     return match;
 }
 
-deque<string> *Regex::match(string src, int sub_num)
+deque<Regex_node *> *Regex::match(string src, int sub_num)
 {
-    deque<string> *matchque = new deque<string>;
+    deque<Regex_node *> *matchque = new deque<Regex_node *>;
     int ovec[OVCOUNT];
     int p = 0;
     int src_len = src.length();
@@ -34,8 +34,12 @@ deque<string> *Regex::match(string src, int sub_num)
         int rc = pcre_exec(re, NULL, src.c_str() + p, src_len - p, 0, 0, ovec, OVCOUNT);
         if (rc <= 0)
             return matchque;
+        Regex_node *rn = new Regex_node();
         string s(src, p + ovec[2 * sub_num], ovec[2 * sub_num + 1] - ovec[2 * sub_num]);
-        matchque->push_back(s);
+        rn->content = s;
+        rn->start = p + ovec[2 * sub_num];
+        rn->end = p + ovec[2 * sub_num + 1];
+        matchque->push_back(rn);
         p += ovec[1];
     }
     return matchque;

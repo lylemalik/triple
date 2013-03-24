@@ -8,5 +8,7 @@
 #define AVAL_ROOT "hust.edu.cn"
 #define TIMEOUT 10
 #define SAVE_DIR "../res/"
+#define XDB_PATH "/usr/local/scws/etc/dict.utf8.xdb"
+#define INI_PATH "/usr/local/scws/etc/rules.utf8.ini"
 
 #endif

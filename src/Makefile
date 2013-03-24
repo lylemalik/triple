@@ -9,13 +9,20 @@ OBJS=../objs/workthread.o \
 	 ../objs/helper.o \
 	 ../objs/reqthread.o \
 	 ../objs/resjob.o \
-	 ../objs/site.o
+	 ../objs/site.o \
+	 ../objs/convert.o \
+	 ../objs/segment.o \
+	 ../objs/index.o \
+	 ../objs/doc.o
 INCLUDE=-I base \
-		-I crawler
+		-I crawler \
+		-I index \
+		-I /usr/local/scws/include/scws
 
 triple:$(OBJS) base/triple.cpp
 	$(CC) $(CFLAGS) $(INCLUDE) $(OBJS) base/triple.cpp -o triple \
-		-l pthread -l pcre
+		-l pthread -l pcre \
+		-L/usr/local/scws/lib -lscws -Wl,--rpath -Wl,/usr/local/scws/lib
 
 ../objs/workthread.o:base/workthread.cpp
 	$(CC) $(CFLAGS) $(INCLUDE) base/workthread.cpp -c -o ../objs/workthread.o
@@ -46,3 +53,15 @@ triple:$(OBJS) base/triple.cpp
 
 ../objs/site.o:crawler/site.cpp
 	$(CC) $(CFLAGS) $(INCLUDE) crawler/site.cpp -c -o ../objs/site.o
+
+../objs/convert.o:index/convert.cpp
+	$(CC) $(CFLAGS) $(INCLUDE) index/convert.cpp -c -o ../objs/convert.o
+
+../objs/index.o:index/index.cpp
+	$(CC) $(CFLAGS) $(INCLUDE) index/index.cpp -c -o ../objs/index.o
+
+../objs/segment.o:index/segment.cpp
+	$(CC) $(CFLAGS) $(INCLUDE) index/segment.cpp -c -o ../objs/segment.o
+
+../objs/doc.o:index/doc.cpp
+	$(CC) $(CFLAGS) $(INCLUDE) index/doc.cpp -c -o ../objs/doc.o
